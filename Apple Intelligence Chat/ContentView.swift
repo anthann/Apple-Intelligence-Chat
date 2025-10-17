@@ -170,6 +170,9 @@ struct ContentView: View {
         let prompt = inputText
         inputText = ""
         
+        // 收起键盘
+        hideKeyboard()
+        
         // Add empty assistant message for streaming
         messages.append(ChatMessage(role: .assistant, text: ""))
         
@@ -263,6 +266,13 @@ struct ContentView: View {
         self.errorMessage = message
         self.showErrorAlert = true
         self.isResponding = false
+    }
+    
+    /// 收起键盘
+    private func hideKeyboard() {
+#if os(iOS)
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+#endif
     }
 }
 
