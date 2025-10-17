@@ -220,7 +220,16 @@ struct ContentView: View {
     // MARK: - Session & Helpers
     
     private func createSession() -> LanguageModelSession {
-        return LanguageModelSession(instructions: systemInstructions)
+        // 创建 WeStore Cafe 工具
+        let menuTool = WeStoreCafeMenuTool()
+        let addToCartTool = AddToCartTool()
+        let viewCartTool = ViewCartTool()
+        
+        // 创建带有工具的语言模型会话
+        return LanguageModelSession(
+            tools: [menuTool, addToCartTool, viewCartTool],
+            instructions: systemInstructions
+        )
     }
     
     private func resetConversation() {
