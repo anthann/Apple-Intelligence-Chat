@@ -4,20 +4,20 @@ import Combine
 
 // MARK: - Data Models
 
-/// 咖啡温度选项
+/// Coffee temperature options
 enum CoffeeTemperature: String, CaseIterable, Codable {
     case hot = "hot"
     case iced = "iced"
     
     var displayName: String {
         switch self {
-        case .hot: return "热饮"
-        case .iced: return "冰饮"
+        case .hot: return "Hot"
+        case .iced: return "Iced"
         }
     }
 }
 
-/// 甜度选项
+/// Sweetness level options
 enum SweetnessLevel: String, CaseIterable, Codable {
     case noSugar = "no_sugar"
     case light = "light"
@@ -26,15 +26,15 @@ enum SweetnessLevel: String, CaseIterable, Codable {
     
     var displayName: String {
         switch self {
-        case .noSugar: return "无糖"
-        case .light: return "少糖"
-        case .regular: return "正常糖"
-        case .extra: return "多糖"
+        case .noSugar: return "No Sugar"
+        case .light: return "Light"
+        case .regular: return "Regular"
+        case .extra: return "Extra"
         }
     }
 }
 
-/// 咖啡饮品
+/// Coffee beverage item
 struct CoffeeItem: Codable {
     let id: String
     let name: String
@@ -44,7 +44,7 @@ struct CoffeeItem: Codable {
     let availableSweetness: [SweetnessLevel]
 }
 
-/// 购物车中的商品
+/// Item in shopping cart
 struct CartItem: Codable {
     let coffeeItem: CoffeeItem
     let temperature: CoffeeTemperature
@@ -56,7 +56,7 @@ struct CartItem: Codable {
     }
 }
 
-/// 购物车
+/// Shopping cart
 struct ShoppingCart: Codable {
     var items: [CartItem] = []
     
@@ -65,7 +65,7 @@ struct ShoppingCart: Codable {
     }
     
     mutating func addItem(_ item: CartItem) {
-        // 检查是否已存在相同配置的商品
+        // Check if item with same configuration already exists
         if let existingIndex = items.firstIndex(where: { 
             $0.coffeeItem.id == item.coffeeItem.id && 
             $0.temperature == item.temperature && 
@@ -80,48 +80,48 @@ struct ShoppingCart: Codable {
 
 // MARK: - Mock Data
 
-/// WeStore Cafe 的咖啡菜单
+/// WeStore Cafe coffee menu
 class WeStoreCafeMenu {
     static let shared = WeStoreCafeMenu()
     
     let menuItems: [CoffeeItem] = [
         CoffeeItem(
             id: "americano",
-            name: "美式咖啡",
+            name: "Americano",
             price: 25.0,
-            description: "经典美式咖啡，口感浓郁",
+            description: "Classic Americano coffee with rich flavor",
             availableTemperatures: [.hot, .iced],
             availableSweetness: [.noSugar, .light, .regular]
         ),
         CoffeeItem(
             id: "latte",
-            name: "拿铁咖啡",
+            name: "Latte",
             price: 35.0,
-            description: "香浓牛奶与咖啡的完美融合",
+            description: "Perfect blend of rich milk and coffee",
             availableTemperatures: [.hot, .iced],
             availableSweetness: [.noSugar, .light, .regular, .extra]
         ),
         CoffeeItem(
             id: "cappuccino",
-            name: "卡布奇诺",
+            name: "Cappuccino",
             price: 32.0,
-            description: "丰富的奶泡与咖啡的经典组合",
+            description: "Classic combination of rich foam and coffee",
             availableTemperatures: [.hot],
             availableSweetness: [.noSugar, .light, .regular]
         ),
         CoffeeItem(
             id: "mocha",
-            name: "摩卡咖啡",
+            name: "Mocha",
             price: 38.0,
-            description: "巧克力与咖啡的甜蜜邂逅",
+            description: "Sweet encounter of chocolate and coffee",
             availableTemperatures: [.hot, .iced],
             availableSweetness: [.light, .regular, .extra]
         ),
         CoffeeItem(
             id: "espresso",
-            name: "意式浓缩",
+            name: "Espresso",
             price: 20.0,
-            description: "纯正意式浓缩咖啡",
+            description: "Authentic Italian espresso coffee",
             availableTemperatures: [.hot],
             availableSweetness: [.noSugar]
         )
@@ -142,42 +142,42 @@ class ShoppingCartManager: ObservableObject {
 
 // MARK: - Tools
 
-/// 工具1: 查询咖啡店菜单
+/// Tool 1: Get coffee shop menu
 struct WeStoreCafeMenuTool: Tool {
     let name = "get_menu"
-    let description = "获取 WeStore Cafe 的完整咖啡菜单，包括价格、描述和可定制选项"
+    let description = "Get the complete WeStore Cafe coffee menu including prices, descriptions and customization options"
     
     typealias Output = String
     
     @Generable
     struct Arguments {
-        // 无需参数
+        // No parameters needed
     }
     
     func call(arguments: Arguments) async throws -> String {
         let menu = await WeStoreCafeMenu.shared.menuItems
         
-        var menuText = "🏪 WeStore Cafe 菜单\n\n"
+        var menuText = "🏪 WeStore Cafe Menu\n\n"
         
         for item in menu {
             menuText += "☕ \(item.name)\n"
-            menuText += "💰 价格: ¥\(String(format: "%.0f", item.price))\n"
-            menuText += "📝 描述: \(item.description)\n"
-            menuText += "🌡️ 温度选项: \(item.availableTemperatures.map { $0.rawValue }.joined(separator: ", "))\n"
-            menuText += "🍯 甜度选项: \(item.availableSweetness.map { $0.rawValue }.joined(separator: ", "))\n"
-            menuText += "🆔 商品ID: \(item.id)\n\n"
+            menuText += "💰 Price: $\(String(format: "%.0f", item.price))\n"
+            menuText += "📝 Description: \(item.description)\n"
+            menuText += "🌡️ Temperature Options: \(item.availableTemperatures.map { $0.rawValue }.joined(separator: ", "))\n"
+            menuText += "🍯 Sweetness Options: \(item.availableSweetness.map { $0.rawValue }.joined(separator: ", "))\n"
+            menuText += "🆔 Item ID: \(item.id)\n\n"
         }
         
-        menuText += "💡 提示: 使用商品ID、温度选项和甜度选项来订购商品"
+        menuText += "💡 Tip: Use item ID, temperature and sweetness options to place orders"
         
         return menuText
     }
 }
 
-/// 工具2: 添加饮品到购物车
+/// Tool 2: Add beverage to cart
 struct AddToCartTool: Tool {
     let name = "add_to_cart"
-    let description = "将指定的咖啡饮品添加到购物车"
+    let description = "Add specified coffee beverage to shopping cart"
     
     typealias Output = String
     
@@ -190,36 +190,36 @@ struct AddToCartTool: Tool {
     }
     
     func call(arguments: Arguments) async throws -> String {
-        // 查找商品
+        // Find the item
         guard let coffeeItem = await WeStoreCafeMenu.shared.menuItems.first(where: { $0.id == arguments.itemId }) else {
-            return "❌ 错误: 找不到商品ID为 '\(arguments.itemId)' 的饮品"
+            return "❌ Error: Cannot find beverage with item ID '\(arguments.itemId)'"
         }
         
-        // 转换字符串为枚举类型
+        // Convert string to enum type
         guard let temperature = CoffeeTemperature(rawValue: arguments.temperature) else {
-            return "❌ 错误: 无效的温度选项 '\(arguments.temperature)'"
+            return "❌ Error: Invalid temperature option '\(arguments.temperature)'"
         }
         
         guard let sweetness = SweetnessLevel(rawValue: arguments.sweetness) else {
-            return "❌ 错误: 无效的甜度选项 '\(arguments.sweetness)'"
+            return "❌ Error: Invalid sweetness option '\(arguments.sweetness)'"
         }
         
-        // 验证温度选项
+        // Validate temperature option
         guard coffeeItem.availableTemperatures.contains(temperature) else {
-            return "❌ 错误: '\(coffeeItem.name)' 不支持 '\(temperature.displayName)' 选项"
+            return "❌ Error: '\(coffeeItem.name)' does not support '\(temperature.displayName)' option"
         }
         
-        // 验证甜度选项
+        // Validate sweetness option
         guard coffeeItem.availableSweetness.contains(sweetness) else {
-            return "❌ 错误: '\(coffeeItem.name)' 不支持 '\(sweetness.displayName)' 选项"
+            return "❌ Error: '\(coffeeItem.name)' does not support '\(sweetness.displayName)' option"
         }
         
-        // 验证数量
+        // Validate quantity
         guard arguments.quantity > 0 else {
-            return "❌ 错误: 数量必须大于0"
+            return "❌ Error: Quantity must be greater than 0"
         }
         
-        // 创建购物车项目
+        // Create cart item
         let cartItem = CartItem(
             coffeeItem: coffeeItem,
             temperature: temperature,
@@ -227,55 +227,55 @@ struct AddToCartTool: Tool {
             quantity: arguments.quantity
         )
         
-        // 添加到购物车
+        // Add to cart
         await ShoppingCartManager.shared.cart.addItem(cartItem)
         
         let totalPrice = cartItem.totalPrice
-        let result = "✅ 成功添加到购物车!\n\n" +
-               "☕ 商品: \(coffeeItem.name)\n" +
-               "🌡️ 温度: \(temperature.displayName)\n" +
-               "🍯 甜度: \(sweetness.displayName)\n" +
-               "📦 数量: \(arguments.quantity)\n" +
-               "💰 小计: ¥\(String(format: "%.0f", totalPrice))\n" +
-               "🛒 购物车总金额: ¥\(String(format: "%.0f", await ShoppingCartManager.shared.cart.totalAmount))"
+        let result = "✅ Successfully added to cart!\n\n" +
+               "☕ Item: \(coffeeItem.name)\n" +
+               "🌡️ Temperature: \(temperature.displayName)\n" +
+               "🍯 Sweetness: \(sweetness.displayName)\n" +
+               "📦 Quantity: \(arguments.quantity)\n" +
+               "💰 Subtotal: $\(String(format: "%.0f", totalPrice))\n" +
+               "🛒 Cart Total: $\(String(format: "%.0f", await ShoppingCartManager.shared.cart.totalAmount))"
         
         return result
     }
 }
 
-/// 工具3: 查看购物车内容和总金额
+/// Tool 3: View cart contents and total amount
 struct ViewCartTool: Tool {
     let name = "view_cart"
-    let description = "查看购物车中的所有商品和总金额"
+    let description = "View all items in shopping cart and total amount"
     
     typealias Output = String
     
     @Generable
     struct Arguments {
-        // 无需参数
+        // No parameters needed
     }
     
     func call(arguments: Arguments) async throws -> String {
         let cart = await ShoppingCartManager.shared.cart
         
         if cart.items.isEmpty {
-            return "🛒 购物车是空的\n\n💡 提示: 使用菜单工具查看可用商品，然后添加到购物车"
+            return "🛒 Cart is empty\n\n💡 Tip: Use the menu tool to view available items, then add them to cart"
         }
         
-        var cartText = "🛒 WeStore Cafe 购物车\n\n"
+        var cartText = "🛒 WeStore Cafe Cart\n\n"
         
         for (index, item) in cart.items.enumerated() {
             cartText += "\(index + 1). ☕ \(item.coffeeItem.name)\n"
-            cartText += "   🌡️ 温度: \(item.temperature.displayName)\n"
-            cartText += "   🍯 甜度: \(item.sweetness.displayName)\n"
-            cartText += "   📦 数量: \(item.quantity)\n"
-            cartText += "   💰 单价: ¥\(String(format: "%.0f", item.coffeeItem.price))\n"
-            cartText += "   💰 小计: ¥\(String(format: "%.0f", item.totalPrice))\n\n"
+            cartText += "   🌡️ Temperature: \(item.temperature.displayName)\n"
+            cartText += "   🍯 Sweetness: \(item.sweetness.displayName)\n"
+            cartText += "   📦 Quantity: \(item.quantity)\n"
+            cartText += "   💰 Unit Price: $\(String(format: "%.0f", item.coffeeItem.price))\n"
+            cartText += "   💰 Subtotal: $\(String(format: "%.0f", item.totalPrice))\n\n"
         }
         
-        cartText += "💳 总金额: ¥\(String(format: "%.0f", cart.totalAmount))\n"
-        cartText += "📊 商品种类: \(cart.items.count) 种\n"
-        cartText += "📦 总数量: \(cart.items.reduce(0) { $0 + $1.quantity }) 件"
+        cartText += "💳 Total Amount: $\(String(format: "%.0f", cart.totalAmount))\n"
+        cartText += "📊 Item Types: \(cart.items.count) types\n"
+        cartText += "📦 Total Quantity: \(cart.items.reduce(0) { $0 + $1.quantity }) items"
         
         return cartText
     }
