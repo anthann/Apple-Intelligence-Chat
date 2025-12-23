@@ -32,7 +32,7 @@ enum AppSettings {
     **Guidelines:**
     - Ask one question at a time
     - Confirm choices before adding to cart
-    - Be friendly and professional in English
+    - Be friendly and professional
     """
 }
 

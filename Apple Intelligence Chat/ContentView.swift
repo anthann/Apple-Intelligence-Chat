@@ -7,6 +7,7 @@
 
 import SwiftUI
 import FoundationModels
+import Combine
 
 /// Main chat interface view
 struct ContentView: View {
@@ -19,6 +20,7 @@ struct ContentView: View {
     @State private var showSettings = false
     @State private var showErrorAlert = false
     @State private var errorMessage = ""
+    @State private var keyboardHeight: CGFloat = 0
     
     // Model State
     @State private var session: LanguageModelSession?
@@ -37,33 +39,44 @@ struct ContentView: View {
     
     var body: some View {
         NavigationStack {
-            ZStack {
-                // Chat Messages ScrollView
-                ScrollViewReader { proxy in
-                    ScrollView {
-                        VStack {
-                            ForEach(messages) { message in
-                                MessageView(message: message, isResponding: isResponding)
-                                    .id(message.id)
+            GeometryReader { geometry in
+                VStack(spacing: 0) {
+                    // Chat Messages ScrollView
+                    ScrollViewReader { proxy in
+                        ScrollView {
+                            LazyVStack(spacing: 12) {
+                                ForEach(messages) { message in
+                                    MessageView(message: message, isResponding: isResponding)
+                                        .id(message.id)
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.top, 16)
+                            .padding(.bottom, 16)
+                        }
+                        .onChange(of: messages.last?.text) { _, _ in
+                            if let lastMessage = messages.last {
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    proxy.scrollTo(lastMessage.id, anchor: .bottom)
+                                }
                             }
                         }
-                        .padding()
-                        .padding(.bottom, 90) // Space for floating input field
-                    }
-                    .onChange(of: messages.last?.text) {
-                        if let lastMessage = messages.last {
-                            withAnimation {
-                                proxy.scrollTo(lastMessage.id, anchor: .bottom)
+                        .onChange(of: keyboardHeight) { _, _ in
+                            // 当键盘高度变化时，滚动到底部
+                            if let lastMessage = messages.last {
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    proxy.scrollTo(lastMessage.id, anchor: .bottom)
+                                }
                             }
                         }
                     }
-                }
-                
-                // Floating Input Field
-                VStack {
-                    Spacer()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    
+                    // Input Field
                     inputField
-                        .padding(20)
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, max(16, keyboardHeight > 0 ? 0 : 16))
+                        .background(Color(UIColor.systemBackground))
                 }
             }
             .navigationTitle("Apple Intelligence Chat")
@@ -81,39 +94,46 @@ struct ContentView: View {
             } message: {
                 Text(errorMessage)
             }
+            .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { notification in
+                handleKeyboardShow(notification: notification)
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+                handleKeyboardHide()
+            }
+            .onTapGesture {
+                hideKeyboard()
+            }
         }
     }
     
     // MARK: - Subviews
     
-    /// Floating input field with send/stop button
+    /// Input field with send/stop button
     private var inputField: some View {
-        ZStack {
+        HStack(alignment: .center, spacing: 12) {
             TextField("Ask anything", text: $inputText, axis: .vertical)
                 .textFieldStyle(.plain)
                 .lineLimit(1...5)
-                .frame(minHeight: 22)
+                .frame(minHeight: 36)
                 .disabled(isResponding)
                 .onSubmit {
                     if !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                         handleSendOrStop()
                     }
                 }
-                .padding(16)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
             
-            HStack {
-                Spacer()
-                Button(action: handleSendOrStop) {
-                    Image(systemName: isResponding ? "stop.circle.fill" : "arrow.up.circle.fill")
-                        .font(.system(size: 30, weight: .bold))
-                        .foregroundStyle(isSendButtonDisabled ? Color.gray.opacity(0.6) : .primary)
-                }
-                .disabled(isSendButtonDisabled)
-                .animation(.easeInOut(duration: 0.2), value: isResponding)
-                .animation(.easeInOut(duration: 0.2), value: isSendButtonDisabled)
-                .glassEffect(.regular.interactive())
-                .padding(.trailing, 8)
+            Button(action: handleSendOrStop) {
+                Image(systemName: isResponding ? "stop.circle.fill" : "arrow.up.circle.fill")
+                    .font(.system(size: 28, weight: .medium))
+                    .foregroundStyle(isSendButtonDisabled ? Color.gray.opacity(0.6) : .primary)
             }
+            .disabled(isSendButtonDisabled)
+            .animation(.easeInOut(duration: 0.2), value: isResponding)
+            .animation(.easeInOut(duration: 0.2), value: isSendButtonDisabled)
+            .frame(width: 44, height: 44)
+            .padding(.trailing, 8)
         }
         .glassEffect(.regular.interactive())
     }
@@ -273,6 +293,25 @@ struct ContentView: View {
 #if os(iOS)
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
 #endif
+    }
+    
+    /// 处理键盘显示
+    private func handleKeyboardShow(notification: Notification) {
+#if os(iOS)
+        guard let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else { return }
+        let keyboardHeight = keyboardFrame.cgRectValue.height
+        
+        withAnimation(.easeInOut(duration: 0.3)) {
+            self.keyboardHeight = keyboardHeight
+        }
+#endif
+    }
+    
+    /// 处理键盘隐藏
+    private func handleKeyboardHide() {
+        withAnimation(.easeInOut(duration: 0.3)) {
+            self.keyboardHeight = 0
+        }
     }
 }
 
